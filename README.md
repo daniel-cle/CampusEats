@@ -1,3 +1,3 @@
 ### CPSC481 - Final Group Project
-CampusEats 
+CampusEats <br/>
 My portion of the project
