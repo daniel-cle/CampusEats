@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Orders</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #333333;  /* Dark grey background */
+        }
+        .container {
+            max-width: 375px;  /* Max width of the phone screen */
+            height: 812px;
+            overflow-y: scroll;
+            margin: 0 auto;
+            background-color: #E7E7E7;  /* Web app container background */
+            position: relative;
+            border: 1px solid #ccc;  /* To make it more distinct */
+        }
+        .header {
+            max-width: 375px;  /* Max width of the phone screen */
+            height: 113px;  /* Set height to 113px */
+            background-color: #FFBA08;  /* Updated color */
+            display: flex;
+            align-items: center;  /* Align items to center */
+            justify-content: space-between;
+            padding: 10px 15px;  /* Adjusted padding */
+            box-sizing: border-box;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);  /* Deeper shadow */
+        }
+        .header button {
+            background: none;
+            border: none;
+            font-size: 20px;  /* Thicker arrow */
+            font-weight: bold;  
+            cursor: pointer;
+            color: #000000;  /* Black text for back button */
+            top: 12px;  /* Align to top */
+            left: 10px;
+            position: absolute;
+        }
+        .header-title {
+            font-weight: bold;
+            font-size: 22px;
+            color: #000000;  /* Black text for "Orders" */
+            flex-grow: 1;  /* Ensures it doesn't get overlapped */
+            top: 16px;
+            left: 50px;
+            position: absolute;
+        }
+        .check-order-history {
+            font-size: 14px;  /* Smaller text for "Check Order History" */
+            color: #5A5A5A;  /* Existing color */
+            cursor: pointer;
+            position: absolute;
+            top: 10px;  /* Move to the top right corner */
+            right: 10px;
+        }
+        .section {
+            padding: 0;
+            border-bottom: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+        .section-title {
+            font-weight: bold;
+            padding: 15px;
+            font-size: 18px;
+            color: #000000;  /* Darker text for section titles */
+            background-color: #E7E7E7;
+        }
+        .needs-confirmation-text {
+            color: #D32F2F;  /* Deeper red color for text */
+        }
+        .processing-text {
+            color: #FFA500;  /* Orange color for Processing text */
+        }
+        .awaiting-pickup-text {
+            color: #4CAF50;  /* Green color for Awaiting Pick-up text */
+        }
+        .order {
+            background-color: white;
+            padding: 20px;  /* Increased padding for taller boxes */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            box-sizing: border-box;
+            width: 100%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);  /* Deeper shadow */
+            margin-bottom: 1px;  /* Space between orders */
+        }
+        .invisible-button {
+            position: fixed;  /* Fixed position */
+            bottom: 10px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.1);  /* Semi-transparent background */
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button onclick="goBack()">←</button>  <!-- Thicker arrow -->
+            <span class="header-title">Orders</span>
+            <span class="check-order-history" onclick="checkOrderHistory()">Check Order History</span>
+        </div>
+        <div id="ordersContainer">
+            <!-- Order sections will be inserted here dynamically -->
+        </div>
+        <button class="invisible-button" onclick="restoreOrders()"></button>
+    </div>
+
+    <script>
+        const initialOrders = [
+            { orderNumber: 4, name: 'Noah Mitchell', item: '1x Cheese Pizza Slice', price: 3.5, customizations: ['No customizations'], status: 'Needs Confirmation', time: '1m ago', estimatedTime: '12min' },
+            { orderNumber: 3, name: 'Emma Clarkson', item: '1x Salad', price: 5.0, customizations: ['No dressing', 'Add chicken'], status: 'Processing', time: '7m ago', estimatedTime: '12min' },
+            { orderNumber: 2, name: 'Bob Clarkson', item: '1x Soup', price: 4.0, customizations: ['Extra vegetables', '1x Cracker'], status: 'Processing', time: '8m ago', estimatedTime: '12min' },
+            { orderNumber: 1, name: 'Sophia Bennett', item: '1x Sandwich', price: 6.0, customizations: ['Whole grain bread', 'No mayo'], status: 'Awaiting Pick-up', time: '12m ago', estimatedTime: '11min' }
+        ];
+
+        function goBack() {
+            alert('Back Button Pressed');
+        }
+
+        function checkOrderHistory() {
+            window.location.href = "order-history.html";
+        }
+
+        function loadOrders() {
+            let orders = JSON.parse(localStorage.getItem('orders')) || initialOrders;
+            localStorage.setItem('orders', JSON.stringify(orders)); // Store initial orders if not already stored
+            const ordersContainer = document.getElementById('ordersContainer');
+            ordersContainer.innerHTML = ''; // Clear existing content
+
+            const groupedOrders = {
+                "Needs Confirmation": [],
+                "Processing": [],
+                "Awaiting Pick-up": []
+            };
+
+            orders.forEach(order => {
+                groupedOrders[order.status].push(order);
+            });
+
+            Object.keys(groupedOrders).forEach(status => {
+                if (groupedOrders[status].length > 0) {
+                    const section = document.createElement('div');
+                    section.className = 'section';
+
+                    const sectionTitle = document.createElement('div');
+                    sectionTitle.className = 'section-title';
+
+                    switch (status) {
+                        case 'Needs Confirmation':
+                            sectionTitle.innerHTML = `<span class="needs-confirmation-text">Needs Confirmation</span>`;
+                            break;
+                        case 'Processing':
+                            sectionTitle.innerHTML = `<span class="processing-text">Processing</span>`;
+                            break;
+                        case 'Awaiting Pick-up':
+                            sectionTitle.innerHTML = `<span class="awaiting-pickup-text">Awaiting Pick-up</span>`;
+                            break;
+                    }
+
+                    section.appendChild(sectionTitle);
+
+                    groupedOrders[status].forEach(order => {
+                        const orderDiv = document.createElement('div');
+                        orderDiv.className = 'order';
+                        orderDiv.onclick = function () { selectOrder(order.orderNumber, order.name, order.item, order.price, order.customizations, order.status, order.estimatedTime) };
+                        orderDiv.innerHTML = `
+                            <span>Order #${order.orderNumber} - ${order.name}</span>
+                            <span>${order.time}</span>
+                        `;
+                        section.appendChild(orderDiv);
+                    });
+
+                    ordersContainer.appendChild(section);
+                }
+            });
+        }
+
+        function selectOrder(orderNumber, name, item, price, customizations, status, estimatedTime) {
+            const selectedOrder = { orderNumber, name, item, price, customizations, status, estimatedTime };
+            localStorage.setItem('selectedOrder', JSON.stringify(selectedOrder));
+            const urlParams = new URLSearchParams({
+                orderNumber: orderNumber,
+                name: name,
+                item: item,
+                price: price,
+                customizations: customizations.join(','),
+                status: status,
+                estimatedTime: estimatedTime
+            });
+            window.location.href = `order-summary.html?${urlParams.toString()}`;
+        }
+
+        function restoreOrders() {
+            localStorage.setItem('orders', JSON.stringify(initialOrders));
+            loadOrders();
+        }
+
+        function moveToNextStatus() {
+            let orders = JSON.parse(localStorage.getItem('orders')) || [];
+            let selectedOrder = JSON.parse(localStorage.getItem('selectedOrder'));
+
+            let nextStatus;
+            if (selectedOrder.status === 'Needs Confirmation') {
+                nextStatus = 'Processing';
+            } else if (selectedOrder.status === 'Processing') {
+                nextStatus = 'Awaiting Pick-up';
+            } else {
+                nextStatus = selectedOrder.status;
+            }
+
+            const updatedOrders = orders.map(order => {
+                if (order.orderNumber === selectedOrder.orderNumber) {
+                    return { ...order, status: nextStatus };
+                }
+                return order;
+            });
+
+            localStorage.setItem('orders', JSON.stringify(updatedOrders));
+            loadOrders();
+        }
+
+        function cancelOrder() {
+            let orders = JSON.parse(localStorage.getItem('orders')) || [];
+            let selectedOrder = JSON.parse(localStorage.getItem('selectedOrder'));
+
+            const updatedOrders = orders.map(order => {
+                if (order.orderNumber === selectedOrder.orderNumber) {
+                    return { ...order, status: 'Cancelled' };
+                }
+                return order;
+            });
+
+            localStorage.setItem('orders', JSON.stringify(updatedOrders));
+            loadOrders();
+        }
+
+        document.addEventListener('DOMContentLoaded', loadOrders);
+    </script>
+
+</body>
+</html>
